@@ -1,10 +1,5 @@
 #include "ReservationStation.h"
 
-void ReservationStation::Flush() {
-  for (int i = 0; i < RSSize; i++)
-    RS[i] = nxtRS[i];
-}
-
 void ReservationStation::Clear() {
   for (int i = 0; i < RSSize; i++)
     RS[i].busy = RS[i].done = 0;
@@ -12,13 +7,17 @@ void ReservationStation::Clear() {
 
 void ReservationStation::Work() {
   for (int i = 0; i < RSSize; i++) {
-    if (_ReservationStation.RS[i].q1 == -1 && _ReservationStation.RS[i].q2 == -1) {
-      switch (_ReservationStation.RS[i].instruction) {
+    if (RS[i].q1 == -1 && RS[i].q2 == -1 && RS[i].busy && !RS[i].done) {
+      switch (RS[i].instruction) {
         case Instruction::ADD:
         case Instruction::SUB:
         case Instruction::ADDI: {
-          for () {
-
+          for (int i = 0; i < ALUSize; i++) {
+            if (!_add[i].busy) {
+              _add[i].work(RS[i].v1, RS[i].v2, i, RS[i].instruction);
+              done = 1;
+              return;
+            }
           }
           break;
         }
@@ -29,8 +28,12 @@ void ReservationStation::Work() {
         case Instruction::ORI:
         case Instruction::XOR:
         case Instruction::XORI: {
-          for () {
-
+          for (int i = 0; i < ALUSize; i++) {
+            if (!_logic[i].busy) {
+              _logic[i].work(RS[i].v1, RS[i].v2, i, RS[i].instruction);
+              RS[i].done = 1;
+              return;
+            }
           }
           break;
         }
@@ -39,8 +42,12 @@ void ReservationStation::Work() {
         case Instruction::SLTIU:
         case Instruction::SLT:
         case Instruction::SLTU: {
-          for () {
-
+          for (int i = 0; i < ALUSize; i++) {
+            if (!_set[i].busy) {
+              _set[i].work(RS[i].v1, RS[i].v2, i, RS[i].instruction);
+              RS[i].done = 1;
+              return;
+            }
           }
           break;
         }
@@ -51,8 +58,12 @@ void ReservationStation::Work() {
         case Instruction::SLL:
         case Instruction::SRL:
         case Instruction::SRA: {
-          for () {
-            
+          for (int i = 0; i < ALUSize; i++) {
+            if (!_set[i].busy) {
+              _shift[i].work(RS[i].v1, RS[i].v2, i, RS[i].instruction);
+              RS[i].done = 1;
+              return;
+            }
           }
           break;
         }
@@ -63,8 +74,8 @@ void ReservationStation::Work() {
 
 bool ReservationStation::AppendReservation(const ReservationStationEle& newEle) {
   for (int i = 0; i < RSSize; i++) {
-    if (!nxtRS[i].busy) {
-      nxtRS[i] = newEle;
+    if (!RS[i].busy) {
+      RS[i] = newEle;
       return true;
     }
   }

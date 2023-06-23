@@ -4,7 +4,7 @@
 #include <iostream>
 #include <cstdio>
 #include "Utils.h"
-#include "Bus.h"
+#include "RISCV_Simulator.h"
 
 class Register{
   friend class RegisterFile;

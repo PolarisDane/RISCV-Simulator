@@ -5,10 +5,11 @@
 #include <cstdio>
 #include "Utils.h"
 #include "Parser.h"
-#include "Bus.h"
+#include "RISCV_Simulator.h"
 #include "ReservationStation.h"
 
 class ALU {
+  friend class RISCV_Simulator;
   friend class ReservationStation;
 protected:
   bool busy;
@@ -25,6 +26,8 @@ public:
 };
 
 class AddALU :public ALU {
+  friend class RISCV_Simulator;
+  friend class ReservationStation;
 public:
   AddALU() = default;
   AddALU(const AddALU& other) = default;
@@ -34,6 +37,8 @@ public:
 };
 
 class ShiftALU :public ALU {
+  friend class RISCV_Simulator;
+  friend class ReservationStation;
 public:
   ShiftALU() = default;
   ShiftALU(const ShiftALU & other) = default;
@@ -43,6 +48,8 @@ public:
 };
 
 class LogicALU :public ALU {
+  friend class RISCV_Simulator;
+  friend class ReservationStation;
 public:
   LogicALU() = default;
   LogicALU(const LogicALU & other) = default;
@@ -52,6 +59,8 @@ public:
 };
 
 class SetALU :public ALU {
+  friend class RISCV_Simulator;
+  friend class ReservationStation;
 public:
   SetALU() = default;
   SetALU(const SetALU & other) = default;

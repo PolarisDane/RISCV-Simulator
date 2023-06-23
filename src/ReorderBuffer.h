@@ -5,7 +5,7 @@
 #include <cstdio>
 #include "CicularQueue.h"
 #include "Register.h"
-#include "Bus.h"
+#include "RISCV_Simulator.h"
 
 enum ReorderBufferType {
   WR,//Write Register

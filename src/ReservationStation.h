@@ -4,7 +4,7 @@
 #include <iostream>
 #include <cstdio>
 #include "Utils.h"
-#include "Bus.h"
+#include "RISCV_Simulator.h"
 #include "Parser.h"
 #include "ALU.h"
 
@@ -22,8 +22,8 @@ class ReservationStation {
   friend class RISCV_Simulator;
 private:
   static const int RSSize = 32;
+  static const int ALUSize = 3;
   ReservationStationEle RS[RSSize];
-  ReservationStationEle nxtRS[RSSize];
 
   AddALU _add[3];
   ShiftALU _shift[3];
@@ -34,11 +34,10 @@ public:
   ReservationStation() = default;
   ReservationStation(const ReservationStation& other) = default;
   ~ReservationStation() = default;
-  void Flush();
   void Work();
-  void AppendReservation(const ReservationStationEle& newEle);
+  bool AppendReservation(const ReservationStationEle& newEle);
+  //Possible append failure must be dealt with
   void Clear();
 };
-
 
 #endif

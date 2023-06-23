@@ -1,5 +1,5 @@
-#ifndef RISCV_SIMULATOR_BUS
-#define RISCV_SIMULATOR_BUS
+#ifndef RISCV_SIMULATOR
+#define RISCV_SIMULATOR
 
 #include <iostream>
 #include "ReorderBuffer.h"
@@ -16,6 +16,7 @@ private:
   ALU _ALU;
   RegisterFile _RegisterFile;
   Memory _Memory;
+  LoadStoreBuffer _LoadStoreBuffer;
   InstructionParser _InstructionParser;
   size_t _clock = 0;
 public:
@@ -27,8 +28,9 @@ public:
   void Commit();
   void Flush();
   void AppendReorderBuffer(ReorderBufferInfo newInfo);
-  void UpdateReservation();
-
+  void UpdateRS();
+  void UpdateLoadStoreBuffer();
+  void FetchFromRS()
 };
 
 #endif

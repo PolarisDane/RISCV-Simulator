@@ -15,7 +15,6 @@ private:
   ReservationStation _ReservationStation;
   ALU _ALU;
   RegisterFile _RegisterFile;
-  Memory _Memory;
   LoadStoreBuffer _LoadStoreBuffer;
   InstructionParser _InstructionParser;
   size_t _clock = 0;
@@ -25,12 +24,16 @@ public:
   ~RISCV_Simulator() = default;
 
   void Run();
-  void Commit();
   void Flush();
+  
+  void Commit();
   void AppendReorderBuffer(ReorderBufferInfo newInfo);
+
   void UpdateRS();
+  void FetchFromRS();
+
   void UpdateLoadStoreBuffer();
-  void FetchFromRS()
+  
 };
 
 #endif

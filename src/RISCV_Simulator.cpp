@@ -8,30 +8,30 @@ void RISCV_Simulator::Run() {
   }
 }
 
+void RISCV_Simulator::Flush() {
+  _ReorderBuffer.FlushBuffer();
+  _RegisterFile.FlushRegister();
+}
+
 void RISCV_Simulator::Commit() {
   if (_ReorderBuffer.Buffer.empty() || !_ReorderBuffer.Buffer.front().ready) return;
   //Dependency not resolved, not ready for commit
   auto _front = _ReorderBuffer.Buffer.front();
   switch (_front.ReorderBufferType) {
-    case ReorderBufferType::WR: {
-      _RegisterFile.WriteRegister(_front.address, _front.val, -1);
-      break;
-    }
-    case ReorderBufferType::WM: {
-        
-      break;
-    }
-    case ReorderBufferType::BR: {
-        
-      break;
-    }
+  case ReorderBufferType::WR: {
+    _RegisterFile.WriteRegister(_front.address, _front.val, -1);
+    break;
+  }
+  case ReorderBufferType::WM: {
+    _LoadStoreBuffer._Memory.WriteMemory(_front.address, _front.val);
+    break;
+  }
+  case ReorderBufferType::BR: {
+
+    break;
+  }
   }
   _ReorderBuffer.nxtBuffer.pop();
-}
-
-void RISCV_Simulator::Flush() {
-  _ReorderBuffer.FlushBuffer();
-  _RegisterFile.FlushRegister();
 }
 
 void RISCV_Simulator::AppendReorderBuffer(ReorderBufferInfo newInfo) {
@@ -44,7 +44,7 @@ void RISCV_Simulator::AppendReorderBuffer(ReorderBufferInfo newInfo) {
 
 void RISCV_Simulator::UpdateRS() {
   for (int i = 0; i < ReservationStation::RSSize; i++) {
-    if (_ReservationStation.RS[i].busy) {
+    if (_ReservationStation.RS[i].busy && !_ReservationStation.RS[i].done) {
       if (_ReorderBuffer.Buffer[_ReservationStation.RS[i].q1].ready) {
         _ReservationStation.RS[i].q1 = -1;
         _ReservationStation.RS[i].v1 = __ReorderBuffer.Buffer[_ReservationStation.RS[i].q1].val;
@@ -55,12 +55,6 @@ void RISCV_Simulator::UpdateRS() {
       }
     }
     //Resolving dependency in RS, making operations available
-  }
-}
-
-void RISCV_Simulator::UpdateLoadStoreBuffer() {
-  for (int i = 0; i < LoadStoreBuffer::LSBSize; i++) {
-
   }
 }
 
@@ -108,5 +102,14 @@ void RISCV_Simulator::FetchFromRS() {
 }//Fetch previous cycle data from RS to RoB and broadcast it
 //Actually this function fetches data from ALU directly
 
-
+void RISCV_Simulator::UpdateLoadStoreBuffer() {
+  for (int i = 0; i < LoadStoreBuffer::LSBSize; i++) {
+    if (_LoadStoreBuffer.LSB[i].busy && !_LoadStoreBuffer.LSB[i].done) {
+      if (_ReorderBuffer.Buffer[_LoadStoreBuffer.LSB[i].q].ready) {
+        _LoadStoreBuffer.LSB[i].q = -1;
+        _LoadStoreBuffer.LSB[i].v = _ReorderBuffer.Buffer[_LoadStoreBuffer.LSB[i].q].val;
+      }
+    }
+  }
+}
 

@@ -28,7 +28,8 @@ void RISCV_Simulator::Commit() {
       break;
     }
     case ReorderBufferType::BR: {
-        
+      bool RealBranch = _front.val;
+      
       break;
     }
   }

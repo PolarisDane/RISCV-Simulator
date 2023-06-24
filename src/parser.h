@@ -2,6 +2,7 @@
 #define RISCV_SIMULATOR_PARSER
 
 #include <iostream>
+#include "Utils.h"
 
 enum Instruction {
   LUI,
@@ -47,17 +48,33 @@ enum Instruction {
 class InstructionInfo {
 public:
   Instruction InstructionType;
-
+  Line SR1;
+  Line SR2;
+  Line DR;
+  Line Immediate;
 };
 
 class InstructionParser {
 private:
 
 public:
-  Instruction();
-  Instruction(const Instruction& other) = default;
-  Instruction(Instruction&&) = default;
-  ~Instruction();
+  InstructionParser() = default;
+  InstructionParser(const InstructionParser& other) = default;
+  ~InstructionParser() = default;
+
+
 };
+
+Byte ParseOperation(Line instruction);
+Line ParseJALImmediate(Line instruction);
+Line ParseSR1(Line instruction);
+Line ParseSR2(Line instruction);
+Line ParseDR(Line instruction);
+Line ParseArithmeticImmediate(Line instruction);
+Line ParseStoreImmediate(Line instruction);
+Line ParseLoadImmediate(Line instruction);
+Line ParseBranchImmediate(Line instruction);
+Line ParseShamt(Line instruction);
+void Parse(Line instruction);
 
 #endif

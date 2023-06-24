@@ -2,13 +2,14 @@
 
 void RISCV_Simulator::Run() {
   while (true) {
-
+    
     _clock++;
     Flush();
   }
 }
 
 void RISCV_Simulator::Flush() {
+  _LoadStoreBuffer.Flush();
   _ReorderBuffer.FlushBuffer();
   _RegisterFile.FlushRegister();
 }
@@ -18,18 +19,18 @@ void RISCV_Simulator::Commit() {
   //Dependency not resolved, not ready for commit
   auto _front = _ReorderBuffer.Buffer.front();
   switch (_front.ReorderBufferType) {
-  case ReorderBufferType::WR: {
-    _RegisterFile.WriteRegister(_front.address, _front.val, -1);
-    break;
-  }
-  case ReorderBufferType::WM: {
-    _LoadStoreBuffer._Memory.WriteMemory(_front.address, _front.val);
-    break;
-  }
-  case ReorderBufferType::BR: {
-
-    break;
-  }
+    case ReorderBufferType::WR: {
+      _RegisterFile.WriteRegister(_front.address, _front.val, -1);
+      break;
+    }
+    case ReorderBufferType::WM: {
+      _LoadStoreBuffer._Memory.WriteMemory(_front.address, _front.val);
+      break;
+    }
+    case ReorderBufferType::BR: {
+        
+      break;
+    }
   }
   _ReorderBuffer.nxtBuffer.pop();
 }
@@ -102,7 +103,7 @@ void RISCV_Simulator::FetchFromRS() {
 }//Fetch previous cycle data from RS to RoB and broadcast it
 //Actually this function fetches data from ALU directly
 
-void RISCV_Simulator::UpdateLoadStoreBuffer() {
+void RISCV_Simulator::UpdateLSB() {
   for (int i = 0; i < LoadStoreBuffer::LSBSize; i++) {
     if (_LoadStoreBuffer.LSB[i].busy && !_LoadStoreBuffer.LSB[i].done) {
       if (_ReorderBuffer.Buffer[_LoadStoreBuffer.LSB[i].q].ready) {
@@ -110,6 +111,16 @@ void RISCV_Simulator::UpdateLoadStoreBuffer() {
         _LoadStoreBuffer.LSB[i].v = _ReorderBuffer.Buffer[_LoadStoreBuffer.LSB[i].q].val;
       }
     }
+  }
+}
+
+void RISCV_Simulator::FetchFromLSB() {
+  auto curLSB = _LoadStoreBuffer.LSB[_LoadStoreBuffer.curLSBIndex];
+  if (curLSB.done) {
+    _ReorderBuffer.Buffer[curLSB.RoBIndex].val = curLSB.result;
+    _ReorderBuffer.Buffer[curLSB.RoBIndex].ready = true;
+    _LoadStoreBuffer.LSB[_LoadStoreBuffer.curLSBIndex].busy = 0;
+    _LoadStoreBuffer.LSB[_LoadStoreBuffer.curLSBIndex].done = 0;
   }
 }
 

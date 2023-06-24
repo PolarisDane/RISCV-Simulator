@@ -32,7 +32,8 @@ public:
   void UpdateRS();
   void FetchFromRS();
 
-  void UpdateLoadStoreBuffer();
+  void UpdateLSB();
+  void FetchFromLSB()
   
 };
 

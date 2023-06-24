@@ -15,7 +15,3 @@ void ReorderBuffer::AppendBuffer(ReorderBufferInfo newInfo, RISCV_Simulator& _RI
     //Dependency set to the last index of RoB
   }
 }
-
-void ReorderBuffer::WriteBuffer() {
-
-}

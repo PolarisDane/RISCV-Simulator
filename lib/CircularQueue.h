@@ -29,6 +29,9 @@ public:
   size_t sub(size_t cur) {
     return (cur + 1) % _size;
   }
+  size_t pre(size_t cur) {
+    return (cur - 1 + _size) % _size;
+  }
   bool full() {
     return sub(tail) == head;
   }
@@ -37,6 +40,9 @@ public:
   }
   void pop() {
     head = sub(head);
+  }
+  void popback() {
+    tail = pre(tail);
   }
   void push(const DataType& data) {
     queue[tail = sub(tail)] = data;

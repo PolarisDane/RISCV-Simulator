@@ -17,6 +17,7 @@ class ReorderBufferInfo {
 public:
   bool ready = false;
   ReorderBufferType type;
+  Line curPC;//Where this instruction is at, used for possible BR reflow
   Line val;
   Line address;//Register/Memory address
 };

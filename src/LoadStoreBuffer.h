@@ -10,7 +10,6 @@
 
 class LoadStoreBufferEle {
 public:
-  bool busy = 0;
   bool done = 0;
   Line result;
   size_t q1, q2;
@@ -24,9 +23,10 @@ class LoadStoreBuffer {
   friend class RISCV_Simulator;
 private:
   static const int LSBSize = 32;
-  LoadStoreBufferEle LSB[LSBSize];
+  CircularQueue<LoadStoreBufferEle, LSBSize> LSB;
   int count = 0;
-  size_t curLSBIndex;
+  bool busy = 0;
+  bool done = 0;
   Memory _Memory;
 public:
   LoadStoreBuffer() = default;

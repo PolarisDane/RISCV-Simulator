@@ -70,13 +70,31 @@ void SetALU::work(Line in1, Line in2, int pos, Instruction instruction) {
   busy = true;
   switch (instruction) {
     case Instruction::SLT:
-    case Instruction::SLTI:{
+    case Instruction::SLTI:
+    case Instruction::BLT: {
       this->result = (reinterpret_cast<SignedLine>(in1)) < (reinterpret_cast<SignedLine>(in2));
       break;
     }
     case Instruction::SLTU:
-    case Instruction::SLTIU: {
+    case Instruction::SLTIU:
+    case Instruction::BLTU:{
       this->result = in1 < in2;
+      break;
+    }
+    case Instruction::BEQ: {
+      this->result = in1 == in2;
+      break;
+    }
+    case Instruction::BNE: {
+      this->result = in1 != in2;
+      break;
+    }
+    case Instruction::BGE: {
+      this->result = (reinterpret_cast<SignedLine>(in1)) >= (reinterpret_cast<SignedLine>(in2));
+      break;
+    }
+    case Instruction::BGEU: {
+      this->result = in1 >= in2;
       break;
     }
   }

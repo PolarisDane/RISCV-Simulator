@@ -28,6 +28,8 @@ void RISCV_Simulator::Commit() {
     }
     case ReorderBufferType::WM: {
       _LoadStoreBuffer._Memory.WriteMemory(_front.address, _front.val);
+      _LoadStoreBuffer.busy = 0;
+      _LoadStoreBuffer.done = 0;
       break;
     }
     case ReorderBufferType::BR: {
@@ -39,7 +41,8 @@ void RISCV_Simulator::Commit() {
         _ReservationStation.Clear();
         _RegisterFile.ResetRegister();
         _LoadStoreBuffer.Clear();
-        _InstructionUnit.PC = RealBranch;
+        if (RealBranch) _InstructionUnit.PC = _front.address;
+        else _InstructionUnit.PC = _front.curPC;
         return;//ReorderBuffer already cleared
       }
       break;
@@ -48,11 +51,16 @@ void RISCV_Simulator::Commit() {
   _ReorderBuffer.nxtBuffer.pop();
 }
 
+void UpdateReorderBuffer() {
+  for (int i=)
+}
+
 void RISCV_Simulator::AppendReorderBuffer(ReorderBufferInfo newInfo) {
   _ReorderBuffer.nxtBuffer.push(newInfo);
   if (newInfo.type == ReorderBufferType::WR) {
     _RegisterFile.SetDependency(newInfo.address, _ReorderBuffer.nxtBuffer.LastIndex());
     //Dependency set to the last index of RoB
+    //This doesn't need to be restored if RS is fulled because dependency of a register is used only if a new instruction is issued
   }
 }
 
@@ -127,22 +135,22 @@ void RISCV_Simulator::FetchFromRS() {
 
 void RISCV_Simulator::UpdateLSB() {
   for (int i = 0; i < LoadStoreBuffer::LSBSize; i++) {
-    if (_LoadStoreBuffer.LSB[i].busy && !_LoadStoreBuffer.LSB[i].done) {
-      if (_ReorderBuffer.Buffer[_LoadStoreBuffer.LSB[i].q].ready) {
-        _LoadStoreBuffer.LSB[i].q = -1;
-        _LoadStoreBuffer.LSB[i].v = _ReorderBuffer.Buffer[_LoadStoreBuffer.LSB[i].q].val;
-      }
+    if (_ReorderBuffer.Buffer[_LoadStoreBuffer.LSB[i].q1].ready) {
+      _LoadStoreBuffer.LSB[i].q1 = -1;
+      _LoadStoreBuffer.LSB[i].v1 = _ReorderBuffer.Buffer[_LoadStoreBuffer.LSB[i].q1].val;
+    }
+    if (_ReorderBuffer.Buffer[_LoadStoreBuffer.LSB[i].q2].ready) {
+      _LoadStoreBuffer.LSB[i].q2 = -1;
+      _LoadStoreBuffer.LSB[i].v2 = _ReorderBuffer.Buffer[_LoadStoreBuffer.LSB[i].q2].val;
     }
   }
 }
 
 void RISCV_Simulator::FetchFromLSB() {
-  auto curLSB = _LoadStoreBuffer.LSB[_LoadStoreBuffer.curLSBIndex];
-  if (curLSB.done) {
-    _ReorderBuffer.Buffer[curLSB.RoBIndex].val = curLSB.result;
+  auto curLS = _LoadStoreBuffer.LSB.front();
+  if (_LoadStoreBuffer.done) {
+    _ReorderBuffer.Buffer[curLSB.RoBIndex].val = curLS.result;
     _ReorderBuffer.Buffer[curLSB.RoBIndex].ready = true;
-    _LoadStoreBuffer.LSB[_LoadStoreBuffer.curLSBIndex].busy = 0;
-    _LoadStoreBuffer.LSB[_LoadStoreBuffer.curLSBIndex].done = 0;
   }
 }
 
@@ -150,19 +158,21 @@ void RISCV_Simulator::Issue() {
   if (dependency != -1) return;//Blocked by JALR
   Line newLine = _Memory.ReadMemory(_InstructionUnit.PC);
   InstructionInfo instruction = ParseInstruction(newLine);
-  switch (instruction) {
+  switch (instruction.InstructionType) {
     case Instruction::LUI: {
       ReorderBufferInfo newInfo;
+      newInfo.curPC = _InstructionUnit.PC;
       newInfo.type = ReorderBufferType::WR;
       newInfo.address = instruction.DR;
       newInfo.val = instruction.Immediate;
       newInfo.ready = 0;
-      AppendReorderBuffer(newInfo);
+      if (!AppendReorderBuffer(newInfo)) return;
       _InstructionUnit.PC += 4;
       break;
     }
     case Instruction::AUIPC: {
       ReorderBufferInfo newInfo;
+      newInfo.curPC = _InstructionUnit.PC;
       newInfo.type = ReorderBufferType::WR;
       newInfo.address = instruction.DR;
       newInfo.val = instruction.Immediate + _InstructionUnit.PC;
@@ -173,22 +183,24 @@ void RISCV_Simulator::Issue() {
     }
     case Instruction::JAL: {
       ReorderBufferInfo newInfo;
+      newInfo.curPC = _InstructionUnit.PC;
       newInfo.type = ReorderBufferType::WR;
       newInfo.address = instruction.DR;
       newInfo.val = _InstructionUnit.PC + 4;
       newInfo.ready = 1;
-      AppendReorderBuffer(newInfo);
+      if (!AppendReorderBuffer(newInfo)) return;
       //Writing PC+4 into DR
       _InstructionUnit.PC = instruction.Immediate + _InstructionUnit.PC;
       break;
     }
     case Instruction::JALR: {
       ReorderBufferInfo newInfo;
+      newInfo.curPC = _InstructionUnit.PC;
       newInfo.type = ReorderBufferType::WR;
       newInfo.address = instruction.DR;
       newInfo.val = _InstructionUnit.PC + 4;
       newInfo.ready = 0;
-      AppendReorderBuffer(newInfo);
+      if (!AppendReorderBuffer(newInfo)) return;
       //Writing PC+4 into DR
       if (_RegisterFile.ReadDependency(instruction.DR) == -1) {
         _InstructionUnit.PC = _InstructionUnit.PC + instruction.Immediate;
@@ -201,13 +213,98 @@ void RISCV_Simulator::Issue() {
     }//JALR need a special dependency record for its usage of register
     //If there is a JALR, then the issue process should be stopped for we could never know where PC should go
     //So instead we will stop the process and wait until the dependency is resolved
-    case Instruction::BEQ: {
+    case Instruction::BEQ:
+    case Instruction::BNE:
+    case Instruction::BLT:
+    case Instruction::BGE:
+    case Instruction::BLTU:
+    case Instruction::BGEU: {
       ReorderBufferInfo newInfo;
-      ReservationStationEle newEle;
-      newEle.instruction = Instruction::SUB;
-      _ReservationStation.AppendReservation();
+      newInfo.curPC = _InstructionUnit.PC;
       newInfo.type = ReorderBufferType::BR;
-      newInfo.address = instruction;
+      newInfo.address = _InstructionUnit.PC + instruction.Immediate;
+      newInfo.val = 0;
+      if (!AppendReorderBuffer(newInfo)) return;
+      ReservationStationEle newEle;
+      newEle.RoBIndex = _ReorderBuffer.Buffer.LastIndex();
+      newEle.busy = 1; newEle.done = 0;
+      newEle.instruction = instruction.InstructionType;
+      newEle.q1 = _RegisterFile.ReadDependency(instruction.SR1);
+      newEle.q2 = _RegisterFile.ReadDependency(instruction.SR2);
+      if (!_ReservationStation.AppendReservation(newEle)) {
+        _ReorderBuffer.nxtBuffer.popback();
+        return;
+      }
+      bool Prediction = _BranchPredictor.GetPrediction();
+      if (Prediction) _InstructionUnit.PC += instruction.Immediate;
+      else _InstructionUnit.PC += 4;
+      break;
+    }
+    case Instruction::LB:
+    case Instruction::LH:
+    case Instruction::LW:
+    case Instruction::LBU:
+    case Instruction::LHU: {
+      ReorderBufferInfo newInfo;
+      newInfo.curPC = _InstructionUnit.PC;
+      newInfo.type = ReorderBufferType::WR;
+      newInfo.address = instruction.DR;
+      if (!AppendReorderBuffer(newInfo)) return;
+      LoadStoreBufferEle newEle;
+      newEle.RoBIndex = _ReorderBuffer.Buffer.LastIndex();
+      newEle.done = 0;
+      newEle.offset = instruction.Immediate;
+      newEle.instruction = instruction.InstructionType;
+      newEle.q1 = _RegisterFile.ReadDependency(instruction.SR1);
+      newEle.q2 = -1;
+      if (!_LoadStoreBuffer.AppendBuffer(newEle)) {
+        _ReorderBuffer.nxtBuffer.popback();
+        return;
+      }
+      _InstructionUnit.PC += 4;
+      break;
+    }
+    case Instruction::SB:
+    case Instruction::SH:
+    case Instruction::SW: {
+      ReorderBufferInfo newInfo;
+      newInfo.curPC = _InstructionUnit.PC;
+      newInfo.type = ReorderBufferType::WM;
+      newInfo.address = instruction.Immediate;//Problems here!
+      if (!AppendReorderBuffer(newInfo)) return;
+      LoadStoreBufferEle newEle;
+      newEle.RoBIndex = _ReorderBuffer.Buffer.LastIndex();
+      newEle.done = 0;
+      newEle.offset = instruction.Immediate;
+      newEle.instruction = instruction.InstructionType;
+      newEle.q1 = _RegisterFile.ReadDependency(instruction.SR1);
+      newEle.q2 = _RegisterFile.ReadDependency(instruction.SR2);
+      if (!_LoadStoreBuffer.AppendBuffer(newEle)) {
+        _ReorderBuffer.nxtBuffer.popback();
+        return;
+      }
+      _InstructionUnit.PC += 4;
+      break;
+    }
+    case Instruction::ADDI: {
+      ReorderBufferInfo newInfo;
+      newInfo.curPC = _InstructionUnit.PC;
+      newInfo.type = ReorderBufferType::WR;
+      newInfo.address = instruction.DR;
+      if (!AppendReorderBuffer(newInfo)) return;
+      ReservationStationEle newEle;
+      newEle.RoBIndex = _ReorderBuffer.Buffer.LastIndex();
+      newEle.busy = 0; newEle.done = 0;
+      newEle.instruction = instruction.InstructionType;
+      newEle.q1 = _RegisterFile.ReadDependency(instruction.SR1);
+      newEle.v2 = instruction.Immediate;
+      newEle.q2 = -1;
+      if (!_ReservationStation.AppendReservation(newEle)) {
+        _ReorderBuffer.nxtBuffer.popback();
+        return;
+      }
+      _InstructionUnit.PC += 4;
+      break;
     }
   }
 }

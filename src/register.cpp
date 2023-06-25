@@ -22,7 +22,7 @@ void RegisterFile::FlushRegister() {
 }
 
 Line& RegisterFile::ReadRegister(Line RegisterIndex) {
-  return curRegister[RegisterIndex].ReadData();
+  return nxtRegister[RegisterIndex].ReadData();
 }
 
 void RegisterFile::ResetRegister() {

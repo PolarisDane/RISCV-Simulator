@@ -34,6 +34,7 @@ public:
   void Update();
   
   void Commit();
+  void UpdateReorderBuffer();
   void AppendReorderBuffer(ReorderBufferInfo newInfo);
 
   void UpdateRS();

@@ -9,6 +9,7 @@
 #include "Memory.h"
 #include "Predictor.h"
 #include "Utils.h"
+#include "CircularQueue.h"
 
 class RISCV_Simulator {
 private:
@@ -21,6 +22,8 @@ private:
   BranchPredictor _BranchPredictor;
   Line PC;
   size_t _clock = 0;
+  int dependency = -1;
+  Line immediate;
 public:
   RISCV_Simulator() = default;
   RISCV_Simulator(const RISCV_Simulator& other) = default;
@@ -28,6 +31,7 @@ public:
 
   void Run();
   void Flush();
+  void Update();
   
   void Commit();
   void AppendReorderBuffer(ReorderBufferInfo newInfo);
@@ -36,7 +40,9 @@ public:
   void FetchFromRS();
 
   void UpdateLSB();
-  void FetchFromLSB()
+  void FetchFromLSB();
+
+  void Issue(InstructionInfo newInfo);
   
 };
 

@@ -4,6 +4,7 @@
 #include <iostream>
 #include "Utils.h"
 #include "Memory.h"
+#include "RISCV_Simulator.h"
 
 enum Instruction {
   LUI,
@@ -64,7 +65,6 @@ public:
   InstructionUnit(const InstructionUnit& other) = default;
   ~InstructionUnit() = default;
 
-  void Issue(InstructionInfo newInfo);
 };
 
 Byte ParseOperation(Line instruction);

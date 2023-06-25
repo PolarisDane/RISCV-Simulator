@@ -53,6 +53,9 @@ public:
   const DataType& operator [](size_t index) {
     return queue[index];
   }
+  size_t FirstIndex() {
+    return head;
+  }
   size_t LastIndex() {
     return tail;
   }

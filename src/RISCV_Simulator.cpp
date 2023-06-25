@@ -20,7 +20,10 @@ void RISCV_Simulator::Commit() {
   auto _front = _ReorderBuffer.Buffer.front();
   switch (_front.ReorderBufferType) {
     case ReorderBufferType::WR: {
-      _RegisterFile.WriteRegister(_front.address, _front.val, -1);
+      if (_RegisterFile.ReadDependency(_front.address) == _ReorderBuffer.Buffer.FirstIndex()) {
+        _RegisterFile.SetDependency(_front.address, -1);
+      }//Register dependency always set on the last user, so only the last user can reset dependency
+      _RegisterFile.ReadRegister(_front.address) = _front.val;
       break;
     }
     case ReorderBufferType::WM: {
@@ -51,6 +54,15 @@ void RISCV_Simulator::AppendReorderBuffer(ReorderBufferInfo newInfo) {
     _RegisterFile.SetDependency(newInfo.address, _ReorderBuffer.nxtBuffer.LastIndex());
     //Dependency set to the last index of RoB
   }
+}
+
+void RISCV_Simulator::Update() {
+  UpdateRS();
+  UpdateLSB();
+  if (dependency != -1 && _ReorderBuffer.Buffer[dependency].ready) {
+    _InstructionUnit.PC = _InstructionUnit.PC + immediate;
+    dependency = -1;
+  }//JALR ready for process
 }
 
 void RISCV_Simulator::UpdateRS() {
@@ -131,6 +143,72 @@ void RISCV_Simulator::FetchFromLSB() {
     _ReorderBuffer.Buffer[curLSB.RoBIndex].ready = true;
     _LoadStoreBuffer.LSB[_LoadStoreBuffer.curLSBIndex].busy = 0;
     _LoadStoreBuffer.LSB[_LoadStoreBuffer.curLSBIndex].done = 0;
+  }
+}
+
+void RISCV_Simulator::Issue() {
+  if (dependency != -1) return;//Blocked by JALR
+  Line newLine = _Memory.ReadMemory(_InstructionUnit.PC);
+  InstructionInfo instruction = ParseInstruction(newLine);
+  switch (instruction) {
+    case Instruction::LUI: {
+      ReorderBufferInfo newInfo;
+      newInfo.type = ReorderBufferType::WR;
+      newInfo.address = instruction.DR;
+      newInfo.val = instruction.Immediate;
+      newInfo.ready = 0;
+      AppendReorderBuffer(newInfo);
+      _InstructionUnit.PC += 4;
+      break;
+    }
+    case Instruction::AUIPC: {
+      ReorderBufferInfo newInfo;
+      newInfo.type = ReorderBufferType::WR;
+      newInfo.address = instruction.DR;
+      newInfo.val = instruction.Immediate + _InstructionUnit.PC;
+      newInfo.ready = 0;
+      AppendReorderBuffer(newInfo);
+      _Instruction.PC += 4;
+      break;
+    }
+    case Instruction::JAL: {
+      ReorderBufferInfo newInfo;
+      newInfo.type = ReorderBufferType::WR;
+      newInfo.address = instruction.DR;
+      newInfo.val = _InstructionUnit.PC + 4;
+      newInfo.ready = 1;
+      AppendReorderBuffer(newInfo);
+      //Writing PC+4 into DR
+      _InstructionUnit.PC = instruction.Immediate + _InstructionUnit.PC;
+      break;
+    }
+    case Instruction::JALR: {
+      ReorderBufferInfo newInfo;
+      newInfo.type = ReorderBufferType::WR;
+      newInfo.address = instruction.DR;
+      newInfo.val = _InstructionUnit.PC + 4;
+      newInfo.ready = 0;
+      AppendReorderBuffer(newInfo);
+      //Writing PC+4 into DR
+      if (_RegisterFile.ReadDependency(instruction.DR) == -1) {
+        _InstructionUnit.PC = _InstructionUnit.PC + instruction.Immediate;
+      }//If there exists no dependency at the current moment, then it can be carried out right now
+      else {
+        immediate = instruction.Immediate;
+        dependency = ReadDependency(instruction.DR);
+      }
+      break;
+    }//JALR need a special dependency record for its usage of register
+    //If there is a JALR, then the issue process should be stopped for we could never know where PC should go
+    //So instead we will stop the process and wait until the dependency is resolved
+    case Instruction::BEQ: {
+      ReorderBufferInfo newInfo;
+      ReservationStationEle newEle;
+      newEle.instruction = Instruction::SUB;
+      _ReservationStation.AppendReservation();
+      newInfo.type = ReorderBufferType::BR;
+      newInfo.address = instruction;
+    }
   }
 }
 

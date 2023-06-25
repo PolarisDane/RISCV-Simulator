@@ -25,11 +25,6 @@ Line& RegisterFile::ReadRegister(Line RegisterIndex) {
   return curRegister[RegisterIndex].ReadData();
 }
 
-void RegisterFile::WriteRegister(Line RegisterIndex, Line _data, int _dependency) {
-  nxtRegister[RegisterIndex].data = _data;
-  nxtRegister[RegisterIndex].dependency = _dependency;
-}
-
 void RegisterFile::ResetRegister() {
   for (int i = 0; i < RegisterFileSize; i++)
     curRegister[i].ResetDependency();

@@ -33,7 +33,6 @@ public:
   ~RegisterFile() = default;
   void FlushRegister();
   Line& ReadRegister(Line RegisterIndex);
-  void WriteRegister(Line RegisterIndex, Line _data, int _dependency);
   void ResetRegister();
   int ReadDependency(Line RegisterIndex);
   void SetDependency(Line RegisterIndex, int _dependency);

@@ -249,13 +249,6 @@ InstructionInfo ParseInstruction(Line instruction) {
   }
 }
 
-void InstructionUnit::Issue() {
-  Line instruction = _Memory.ReadMemory(PC);
-  Instruction operation = ParseInstruction(instruction);
-  switch (operation) {
-    case 
-  }
-}
 
 
 

@@ -25,10 +25,10 @@ private:
   static const int ALUSize = 3;
   ReservationStationEle RS[RSSize];
 
-  AddALU _add[3];
-  ShiftALU _shift[3];
-  LogicALU _logic[3];
-  SetALU _set[3];
+  AddALU _add[ALUSize];
+  ShiftALU _shift[ALUSize];
+  LogicALU _logic[ALUSize];
+  SetALU _set[ALUSize];
 
 public:
   ReservationStation() = default;

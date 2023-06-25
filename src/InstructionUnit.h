@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include "Utils.h"
+#include "Memory.h"
 
 enum Instruction {
   LUI,
@@ -54,27 +55,37 @@ public:
   Line Immediate;
 };
 
-class InstructionParser {
+class InstructionUnit {
+  friend class RISCV_Simulator;
 private:
-
+  Line PC;
 public:
-  InstructionParser() = default;
-  InstructionParser(const InstructionParser& other) = default;
-  ~InstructionParser() = default;
+  InstructionUnit() = default;
+  InstructionUnit(const InstructionUnit& other) = default;
+  ~InstructionUnit() = default;
 
-
+  void Issue(InstructionInfo newInfo);
 };
 
 Byte ParseOperation(Line instruction);
+Line ParseLUIImmediate(Line instruction);
+Line ParseAUIPCImmediate(Line instruction);
 Line ParseJALImmediate(Line instruction);
+Line ParseJALRImmediate(Line instruction);
 Line ParseSR1(Line instruction);
 Line ParseSR2(Line instruction);
 Line ParseDR(Line instruction);
+Instruction ParseBranchInstruction(Line instruction);
+Instruction ParseLoadInstruction(Line instruction);
+Instruction ParseStoreInstruction(Line instruction);
+Instruction ParseArithmeticImmediateInstruction(Line instruction);
+Instruction ParseShiftImmediateInstruction(Line instruction);
+Instruction ParseArithmeticInstruction(Line instruction);
 Line ParseArithmeticImmediate(Line instruction);
 Line ParseStoreImmediate(Line instruction);
 Line ParseLoadImmediate(Line instruction);
 Line ParseBranchImmediate(Line instruction);
 Line ParseShamt(Line instruction);
-void Parse(Line instruction);
+InstructionInfo ParseInstruction(Line instruction);
 
 #endif

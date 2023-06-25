@@ -29,7 +29,16 @@ void RISCV_Simulator::Commit() {
     }
     case ReorderBufferType::BR: {
       bool RealBranch = _front.val;
-      
+      bool Prediction = _BranchPredictor.GetPrediction();
+      _BranchPredictor.UpdateBranchPredictor(RealBranch);
+      if (RealBranch != Prediction) {
+        _ReorderBuffer.ClearBuffer();
+        _ReservationStation.Clear();
+        _RegisterFile.ResetRegister();
+        _LoadStoreBuffer.Clear();
+        _InstructionUnit.PC = RealBranch;
+        return;//ReorderBuffer already cleared
+      }
       break;
     }
   }

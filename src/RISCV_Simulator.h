@@ -4,9 +4,10 @@
 #include <iostream>
 #include "ReorderBuffer.h"
 #include "ReservationStation.h"
-#include "Parser.h"
+#include "InstructionUnit.h"
 #include "ALU.h"
 #include "Memory.h"
+#include "Predictor.h"
 #include "Utils.h"
 
 class RISCV_Simulator {
@@ -16,7 +17,9 @@ private:
   ALU _ALU;
   RegisterFile _RegisterFile;
   LoadStoreBuffer _LoadStoreBuffer;
-  InstructionParser _InstructionParser;
+  InstructionUnit _InstructionUnit;
+  BranchPredictor _BranchPredictor;
+  Line PC;
   size_t _clock = 0;
 public:
   RISCV_Simulator() = default;

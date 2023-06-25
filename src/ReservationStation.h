@@ -5,7 +5,7 @@
 #include <cstdio>
 #include "Utils.h"
 #include "RISCV_Simulator.h"
-#include "Parser.h"
+#include "InstructionUnit.h"
 #include "ALU.h"
 
 class ReservationStationEle {

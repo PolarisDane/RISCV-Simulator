@@ -4,7 +4,7 @@
 #include <iostream>
 #include <cstdio>
 #include "Utils.h"
-#include "Parser.h"
+#include "InstructionUnit.h"
 #include "RISCV_Simulator.h"
 #include "ReservationStation.h"
 

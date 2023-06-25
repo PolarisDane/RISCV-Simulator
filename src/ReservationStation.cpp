@@ -15,7 +15,7 @@ void ReservationStation::Work() {
           for (int i = 0; i < ALUSize; i++) {
             if (!_add[i].busy) {
               _add[i].work(RS[i].v1, RS[i].v2, i, RS[i].instruction);
-              done = 1;
+              RS[i].done = 1;
               return;
             }
           }
@@ -59,7 +59,7 @@ void ReservationStation::Work() {
         case Instruction::SRL:
         case Instruction::SRA: {
           for (int i = 0; i < ALUSize; i++) {
-            if (!_set[i].busy) {
+            if (!_shift[i].busy) {
               _shift[i].work(RS[i].v1, RS[i].v2, i, RS[i].instruction);
               RS[i].done = 1;
               return;

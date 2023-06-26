@@ -53,6 +53,8 @@ Instruction ParseBranchInstruction(Line instruction) {
       return Instruction::BLTU;
     case 0b111:
       return Instruction::BGEU;
+    default:
+      assert(0);
   }
 }
 
@@ -69,38 +71,45 @@ Instruction ParseLoadInstruction(Line instruction) {
       return Instruction::LBU;
     case 0b101:
       return Instruction::LHU;
+    default:
+      assert(0);
   }
 }
 
 Instruction ParseStoreInstruction(Line instruction) {
   Line opt = (instruction >> 12) & (0b111);
   switch (opt) {
-  case 0b000:
-    return Instruction::SB;
-  case 0b001:
-    return Instruction::SH;
-  case 0b010:
-    return Instruction::SW;
+    case 0b000:
+      return Instruction::SB;
+    case 0b001:
+      return Instruction::SH;
+    case 0b010:
+      return Instruction::SW;
+    default:
+      assert(0);
   }
 }
 
 Instruction ParseArithmeticImmediateInstruction(Line instruction) {
   Line opt = (instruction >> 12) & (0b111);
   switch (opt) {
-  case 0b000:
-    return Instruction::ADDI;
-  case 0b010:
-    return Instruction::SLTI;
-  case 0b011:
-    return Instruction::SLTIU;
-  case 0b100:
-    return Instruction::XORI;
-  case 0b110:
-    return Instruction::ORI;
-  case 0b111:
-    return Instruction::ANDI;
-  default:
-    return ParseShiftImmediateInstruction(instruction);
+    case 0b000:
+      return Instruction::ADDI;
+    case 0b010:
+      return Instruction::SLTI;
+    case 0b011:
+      return Instruction::SLTIU;
+    case 0b100:
+      return Instruction::XORI;
+    case 0b110:
+      return Instruction::ORI;
+    case 0b111:
+      return Instruction::ANDI;
+    case 0b001:
+    case 0b101:
+      return ParseShiftImmediateInstruction(instruction);
+    default:
+      assert(0);
   }
 }
 
@@ -114,6 +123,8 @@ Instruction ParseShiftImmediateInstruction(Line instruction) {
       if (opt2 == 0b0000000) return Instruction::SRLI;
       else return Instruction::SRAI;
     }
+    default:
+      assert(0);
   }
 }
 
@@ -142,6 +153,8 @@ Instruction ParseArithmeticInstruction(Line instruction) {
       return Instruction::OR;
     case 0b111:
       return Instruction::AND;
+    default:
+      assert(0);
   }
 }
 
@@ -177,6 +190,10 @@ Line ParseShamt(Line instruction) {
 
 InstructionInfo ParseInstruction(Line instruction) {
   InstructionInfo newInfo;
+  if (instruction == 0x0ff00513) {
+    newInfo.InstructionType = Instruction::END;
+    return newInfo;
+  }
   Byte operation = ParseOperation(instruction);
   switch (operation) {
     case 0b0110111: {
@@ -232,13 +249,6 @@ InstructionInfo ParseInstruction(Line instruction) {
       newInfo.DR = ParseDR(instruction);
       break;
     }
-    case 0b0010011: {
-      newInfo.InstructionType = ParseArithmeticImmediateInstruction(instruction);
-      newInfo.Immediate = ParseArithmeticImmediate(instruction);
-      newInfo.SR1 = ParseSR1(instruction);
-      newInfo.DR = ParseDR(instruction);
-      break;
-    }
     case 0b0110011: {
       newInfo.InstructionType = ParseArithmeticInstruction(instruction);
       newInfo.SR1 = ParseSR1(instruction);
@@ -246,7 +256,10 @@ InstructionInfo ParseInstruction(Line instruction) {
       newInfo.DR = ParseDR(instruction);
       break;
     }
+    default:
+      assert(0);
   }
+  return newInfo;
 }
 
 

@@ -4,7 +4,6 @@
 #include <iostream>
 #include <cstdio>
 #include "Utils.h"
-#include "RISCV_Simulator.h"
 #include "InstructionUnit.h"
 #include "ALU.h"
 

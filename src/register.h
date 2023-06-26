@@ -4,9 +4,8 @@
 #include <iostream>
 #include <cstdio>
 #include "Utils.h"
-#include "RISCV_Simulator.h"
 
-class Register{
+class Register {
   friend class RegisterFile;
 private:
   Line data = 0;
@@ -19,12 +18,11 @@ public:
   int Dependency() const;
   void SetDependency(int _dependency);
   Line& ReadData();
-}
+};
 
 class RegisterFile {
-  friend class RISCV_Simulator;
 private:
-  static int RegisterFileSize = 32;
+  static const int RegisterFileSize = 32;
   Register curRegister[RegisterFileSize];
   Register nxtRegister[RegisterFileSize];
 public:
@@ -32,10 +30,11 @@ public:
   RegisterFile(const RegisterFile& other) = default;
   ~RegisterFile() = default;
   void FlushRegister();
-  Line& ReadRegister(Line RegisterIndex);
+  Line ReadRegister(Line RegisterIndex);
   void ResetRegister();
   int ReadDependency(Line RegisterIndex);
   void SetDependency(Line RegisterIndex, int _dependency);
+  void WriteRegister(Line RegisterIndex, Line _data);
 };
 
 #endif

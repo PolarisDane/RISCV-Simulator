@@ -3,24 +3,24 @@
 
 #include <iostream>
 #include <cstdio>
+#include <string>
+#include <cstring>
 #include "InstructionUnit.h"
 #include "Utils.h"
-#include "LoadStoreBuffer.h"
 
 class Memory {
-  friend class LoadStoreBuffer;
-  friend class RISCV_Simulator;
 private:
   static const int MemorySize = 65536;
   Line RAM[MemorySize];
 public:
   Memory() = default;
-  Memory(const Mermory& other) = default;
+  Memory(const Memory& other) = default;
   ~Memory() = default;
 
   Line ReadMemory(Line MemoryIndex, Instruction instruction);
   void WriteMemory(Line MemoryIndex, Line val, Instruction instruction);
   void ResetMemory();
+  void InitMemory();
 };
 
 #endif

@@ -4,18 +4,19 @@
 #include <iostream>
 #include "ReorderBuffer.h"
 #include "ReservationStation.h"
+#include "Register.h"
 #include "InstructionUnit.h"
 #include "ALU.h"
 #include "Memory.h"
 #include "Predictor.h"
 #include "Utils.h"
+#include "LoadStoreBuffer.h"
 #include "CircularQueue.h"
 
 class RISCV_Simulator {
 private:
   ReorderBuffer _ReorderBuffer;
   ReservationStation _ReservationStation;
-  ALU _ALU;
   RegisterFile _RegisterFile;
   LoadStoreBuffer _LoadStoreBuffer;
   InstructionUnit _InstructionUnit;
@@ -32,10 +33,11 @@ public:
   void Run();
   void Flush();
   void Update();
+  void Fetch();
+  void Work();
   
   void Commit();
-  void UpdateReorderBuffer();
-  void AppendReorderBuffer(ReorderBufferInfo newInfo);
+  bool AppendReorderBuffer(ReorderBufferInfo newInfo);
 
   void UpdateRS();
   void FetchFromRS();
@@ -43,7 +45,7 @@ public:
   void UpdateLSB();
   void FetchFromLSB();
 
-  void Issue(InstructionInfo newInfo);
+  void Issue();
   
 };
 

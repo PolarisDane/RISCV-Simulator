@@ -5,8 +5,6 @@
 #include <cstdio>
 #include "Utils.h"
 #include "InstructionUnit.h"
-#include "RISCV_Simulator.h"
-#include "ReservationStation.h"
 
 class ALU {
   friend class RISCV_Simulator;

@@ -21,7 +21,7 @@ void RegisterFile::FlushRegister() {
     curRegister[i] = nxtRegister[i];
 }
 
-Line& RegisterFile::ReadRegister(Line RegisterIndex) {
+Line RegisterFile::ReadRegister(Line RegisterIndex) {
   return nxtRegister[RegisterIndex].ReadData();
 }
 
@@ -35,5 +35,10 @@ int RegisterFile::ReadDependency(Line RegisterIndex) {
 }
 
 void RegisterFile::SetDependency(Line RegisterIndex, int _dependency) {
-  nxtRegister[RegisterIndex] = _dependency;
+  nxtRegister[RegisterIndex].dependency = _dependency;
+}
+
+void RegisterFile::WriteRegister(Line RegisterIndex, Line _data) {
+  if (!RegisterIndex) return;//x0 should not be modified
+  nxtRegister[RegisterIndex].data = _data;
 }

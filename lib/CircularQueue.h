@@ -21,8 +21,9 @@ public:
     if (this == &other) return (*this);
     for (size_t i = 0; i < _size; i++) _queue[i] = other._queue[i];
     head = other.head; tail = other.tail;
+    return (*this);
   }
-  ~CicularQueue() = default;
+  ~CircularQueue() = default;
   bool empty() {
     return head == tail;
   }
@@ -35,8 +36,8 @@ public:
   bool full() {
     return sub(tail) == head;
   }
-  DataType front() {
-    return queue[sub(head)];
+  DataType& front() {
+    return _queue[sub(head)];
   }
   void pop() {
     head = sub(head);
@@ -45,7 +46,7 @@ public:
     tail = pre(tail);
   }
   void push(const DataType& data) {
-    queue[tail = sub(tail)] = data;
+    _queue[tail = sub(tail)] = data;
   }
   void clear() {
     head = tail = 0;
@@ -54,10 +55,10 @@ public:
     return tail >= head ? tail - head : _size - head + tail + 1;
   }
   DataType& operator [](size_t index) {
-    return queue[index];
+    return _queue[index];
   }
-  const DataType& operator [](size_t index) {
-    return queue[index];
+  const DataType& operator [](size_t index)const {
+    return _queue[index];
   }
   size_t FirstIndex() {
     return head;

@@ -3,20 +3,22 @@
 
 #include <iostream>
 #include <cstdio>
-#include "CicularQueue.h"
+#include "InstructionUnit.h"
+#include "CircularQueue.h"
 #include "Register.h"
-#include "RISCV_Simulator.h"
 
 enum ReorderBufferType {
   WR,//Write Register
   WM,//Write Memory
-  BR//Branch
+  BR,//Branch
+  END//End of program
 };
 
 class ReorderBufferInfo {
 public:
   bool ready = false;
   ReorderBufferType type;
+  Instruction instruction;
   Line curPC;//Where this instruction is at, used for possible BR reflow
   Line val;
   Line address;//Register/Memory address
@@ -31,16 +33,14 @@ public:
   ReorderBuffer() = default;
   ReorderBuffer(const ReorderBuffer& other) = default;
   ~ReorderBuffer() = default;
-  ReorderBuffer& operator [](size_t index) {
+  ReorderBufferInfo& operator [](size_t index) {
     return nxtBuffer[index];
   }//Left value is from the new buffer
-  const ReorderBuffer& operator [](size_t index) {
+  const ReorderBufferInfo& operator [](size_t index)const {
     return Buffer[index];
   }//Right value is from the old buffer
   void FlushBuffer();
   void ClearBuffer();
-  void AppendBuffer(ReorderBufferInfo newInfo, RISCV_Simulator& _RISCV_Simulator);
-  void WriteBuffer(size_t index, Line _val);
 };
 
 #endif

@@ -36,7 +36,7 @@ void ShiftALU::work(Line in1, Line in2, int pos, Instruction instruction) {
     }
     case Instruction::SRA:
     case Instruction::SRAI: {
-      this->result = (reinterpret_cast<SignedLine>(in1)) >> in2;
+      this->result = (static_cast<SignedLine>(in1)) >> in2;
       //Right shift by arithmetic, need to be done in signed form
       break;
     }
@@ -72,7 +72,7 @@ void SetALU::work(Line in1, Line in2, int pos, Instruction instruction) {
     case Instruction::SLT:
     case Instruction::SLTI:
     case Instruction::BLT: {
-      this->result = (reinterpret_cast<SignedLine>(in1)) < (reinterpret_cast<SignedLine>(in2));
+      this->result = (static_cast<SignedLine>(in1)) < (static_cast<SignedLine>(in2));
       break;
     }
     case Instruction::SLTU:
@@ -90,7 +90,7 @@ void SetALU::work(Line in1, Line in2, int pos, Instruction instruction) {
       break;
     }
     case Instruction::BGE: {
-      this->result = (reinterpret_cast<SignedLine>(in1)) >= (reinterpret_cast<SignedLine>(in2));
+      this->result = (static_cast<SignedLine>(in1)) >= (static_cast<SignedLine>(in2));
       break;
     }
     case Instruction::BGEU: {

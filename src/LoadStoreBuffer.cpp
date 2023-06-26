@@ -26,7 +26,7 @@ void LoadStoreBuffer::Work() {
       case Instruction::LW:
       case Instruction::LBU:
       case Instruction::LHU: {
-        curLS.result = _Memory.ReadMemory(curLS[i].v1 + curLS[i].offset, curLS[i].instruction);
+        curLS.result = _Memory.ReadMemory(curLS.v1 + curLS.offset, curLS.instruction);
         //Wait for 3 cycles for the result to return
         break;
       }

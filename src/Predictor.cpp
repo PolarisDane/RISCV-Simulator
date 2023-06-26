@@ -8,6 +8,6 @@ void BranchPredictor::UpdateBranchPredictor(bool newBranch) {
   prev = ((prev << 1) | newBranch) & 0b1111;
 }
 
-void BranchPredictor::GetPrediction() {
+bool BranchPredictor::GetPrediction() {
   return History[prev] >= 2;
 }

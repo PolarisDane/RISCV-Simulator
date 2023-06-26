@@ -1,12 +1,11 @@
-#ifndef RISCV_SIMULATOR_PARSER
-#define RISCV_SIMULATOR_PARSER
+#ifndef RISCV_SIMULATOR_INSTRUCTIONUNIT
+#define RISCV_SIMULATOR_INSTRUCTIONUNIT
 
 #include <iostream>
+#include <cassert>
 #include "Utils.h"
-#include "Memory.h"
-#include "RISCV_Simulator.h"
 
-enum Instruction {
+enum class Instruction {
   LUI,
   AUIPC,
   JAL,
@@ -44,7 +43,7 @@ enum Instruction {
   SRA,
   OR,
   AND,
-
+  END
 };
 
 class InstructionInfo {

@@ -4,9 +4,9 @@
 #include <iostream>
 #include <cstdio>
 #include "Utils.h"
+#include "CircularQueue.h"
 #include "InstructionUnit.h"
 #include "Memory.h"
-#include "RISCV_Simulator.h"
 
 class LoadStoreBufferEle {
 public:
@@ -15,7 +15,7 @@ public:
   size_t q1, q2;
   Line v1, v2;
   Line offset;
-  size_t RoBindex;
+  size_t RoBIndex;
   Instruction instruction;
 };
 

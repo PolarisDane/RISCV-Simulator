@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cstdio>
+#include <cstring>
 #include "Utils.h"
 
 class BranchPredictor {
@@ -18,7 +19,7 @@ public:
   ~BranchPredictor() = default;
 
   void UpdateBranchPredictor(bool newBranch);
-  void GetPrediction();
+  bool GetPrediction();
 };
 
 #endif

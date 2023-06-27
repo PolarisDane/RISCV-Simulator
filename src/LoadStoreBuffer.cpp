@@ -16,10 +16,9 @@ void LoadStoreBuffer::Flush() {
 
 void LoadStoreBuffer::Work() {
   if (busy || LSB.empty()) return;
-  busy = 1;
   auto& curLS = LSB.front();
   if (curLS.q1 == -1 && curLS.q2 == -1) {
-    count = 3;
+    busy = 1; count = 3;
     switch (curLS.instruction) {
       case Instruction::LB:
       case Instruction::LH:

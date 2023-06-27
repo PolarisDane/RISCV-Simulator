@@ -10,8 +10,8 @@ class ALU {
   friend class RISCV_Simulator;
   friend class ReservationStation;
 protected:
-  bool busy;
-  bool done;
+  bool busy = 0;
+  bool done = 0;
   int RSindex;
   Line result;
 public:
@@ -20,6 +20,7 @@ public:
   ~ALU() = default;
 
   void Clear();
+  void Flush();
   virtual void work(Line in1, Line in2, int pos, Instruction instruction) = 0;
 };
 

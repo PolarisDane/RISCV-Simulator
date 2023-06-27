@@ -13,7 +13,7 @@ public:
   bool busy = 0;
   bool done = 0;
   Line v1, v2;
-  size_t q1, q2;
+  int q1, q2;
   size_t RoBIndex;
 };
 
@@ -37,6 +37,7 @@ public:
   bool AppendReservation(const ReservationStationEle& newEle);
   //Possible append failure must be dealt with
   void Clear();
+  void Flush();
 };
 
 #endif

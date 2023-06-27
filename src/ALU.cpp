@@ -5,6 +5,12 @@ void ALU::Clear() {
   RSindex = -1; result = 0;
 }
 
+void ALU::Flush() {
+  if (busy) {
+    done = 1;
+  }
+}
+
 void AddALU::work(Line in1, Line in2, int pos, Instruction instruction) {
   busy = true;
   switch (instruction) {

@@ -2,6 +2,7 @@
 #define RISCV_SIMULATOR
 
 #include <iostream>
+#include <unistd.h>
 #include "ReorderBuffer.h"
 #include "ReservationStation.h"
 #include "Register.h"

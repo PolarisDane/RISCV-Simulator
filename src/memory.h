@@ -10,12 +10,16 @@
 
 class Memory {
 private:
-  static const int MemorySize = 65536;
-  Line RAM[MemorySize];
+  static const int MemorySize = 524288;
+  Byte* RAM;
 public:
-  Memory() = default;
+  Memory() {
+    RAM = new Byte[MemorySize];
+  }
   Memory(const Memory& other) = default;
-  ~Memory() = default;
+  ~Memory() {
+    delete[] RAM;
+  }
 
   Line ReadMemory(Line MemoryIndex, Instruction instruction);
   void WriteMemory(Line MemoryIndex, Line val, Instruction instruction);

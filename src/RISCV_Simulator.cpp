@@ -3,28 +3,43 @@
 void RISCV_Simulator::Run() {
   _LoadStoreBuffer._Memory.InitMemory();
   while (true) {
+    //std::cerr << "Flag1" << std::endl;
     Fetch();
+    //std::cerr << "Flag2" << std::endl;
     Update();
+    //std::cerr << "Flag3" << std::endl;
     Issue();
+    //std::cerr << "Flag4" << std::endl;
     Work();
+    //std::cerr << "Flag5" << std::endl;
     _clock++;
     Commit();
     Flush();
+    std::cerr << std::endl;
   }
 }
 
 void RISCV_Simulator::Flush() {
   _LoadStoreBuffer.Flush();
+  _ReservationStation.Flush();
   _ReorderBuffer.FlushBuffer();
   _RegisterFile.FlushRegister();
 }
 
 void RISCV_Simulator::Commit() {
+  if (!_ReorderBuffer.Buffer.empty()) {
+    std::cerr << "RoB Index:" << _ReorderBuffer.Buffer.FirstIndex() << std::endl;
+    std::cerr << "RoB front Instruction:" << static_cast<int>(_ReorderBuffer.Buffer.front().instruction) << std::endl;
+    std::cerr << "address:" << _ReorderBuffer.Buffer.front().address << std::endl;
+    std::cerr << "val:" << _ReorderBuffer.Buffer.front().val << std::endl;
+  }
   if (_ReorderBuffer.Buffer.empty() || !_ReorderBuffer.Buffer.front().ready) return;
   //Dependency not resolved, not ready for commit
-  auto _front = _ReorderBuffer.Buffer.front();
+  auto _front = _ReorderBuffer.nxtBuffer.front();
+  std::cerr << "Commit" << std::endl;
   switch (_front.type) {
     case ReorderBufferType::WR: {
+      std::cerr << _front.address << " " << _front.val << std::endl;
       if (_RegisterFile.ReadDependency(_front.address) == _ReorderBuffer.Buffer.FirstIndex()) {
         _RegisterFile.SetDependency(_front.address, -1);
       }//Register dependency always set on the last user, so only the last user can reset dependency
@@ -112,8 +127,8 @@ void RISCV_Simulator::FetchFromRS() {
     if (curALU.done) {
       _ReservationStation.RS[curALU.RSindex].busy = 0;
       _ReservationStation.RS[curALU.RSindex].done = 1;
-      _ReorderBuffer.Buffer[_ReservationStation.RS[curALU.RSindex].RoBIndex].val = curALU.result;
-      _ReorderBuffer.Buffer[_ReservationStation.RS[curALU.RSindex].RoBIndex].ready = true;
+      _ReorderBuffer.nxtBuffer[_ReservationStation.RS[curALU.RSindex].RoBIndex].val = curALU.result;
+      _ReorderBuffer.nxtBuffer[_ReservationStation.RS[curALU.RSindex].RoBIndex].ready = true;
       curALU.busy = 0; curALU.done = 0;
     }
   }
@@ -122,8 +137,8 @@ void RISCV_Simulator::FetchFromRS() {
     if (curALU.done) {
       _ReservationStation.RS[curALU.RSindex].busy = 0;
       _ReservationStation.RS[curALU.RSindex].done = 1;
-      _ReorderBuffer.Buffer[_ReservationStation.RS[curALU.RSindex].RoBIndex].val = curALU.result;
-      _ReorderBuffer.Buffer[_ReservationStation.RS[curALU.RSindex].RoBIndex].ready = true;
+      _ReorderBuffer.nxtBuffer[_ReservationStation.RS[curALU.RSindex].RoBIndex].val = curALU.result;
+      _ReorderBuffer.nxtBuffer[_ReservationStation.RS[curALU.RSindex].RoBIndex].ready = true;
       curALU.busy = 0; curALU.done = 0;
     }
   }
@@ -132,8 +147,8 @@ void RISCV_Simulator::FetchFromRS() {
     if (curALU.done) {
       _ReservationStation.RS[curALU.RSindex].busy = 0;
       _ReservationStation.RS[curALU.RSindex].done = 1;
-      _ReorderBuffer.Buffer[_ReservationStation.RS[curALU.RSindex].RoBIndex].val = curALU.result;
-      _ReorderBuffer.Buffer[_ReservationStation.RS[curALU.RSindex].RoBIndex].ready = true;
+      _ReorderBuffer.nxtBuffer[_ReservationStation.RS[curALU.RSindex].RoBIndex].val = curALU.result;
+      _ReorderBuffer.nxtBuffer[_ReservationStation.RS[curALU.RSindex].RoBIndex].ready = true;
       curALU.busy = 0; curALU.done = 0;
     }
   }
@@ -142,8 +157,8 @@ void RISCV_Simulator::FetchFromRS() {
     if (curALU.done) {
       _ReservationStation.RS[curALU.RSindex].busy = 0;
       _ReservationStation.RS[curALU.RSindex].done = 1;
-      _ReorderBuffer.Buffer[_ReservationStation.RS[curALU.RSindex].RoBIndex].val = curALU.result;
-      _ReorderBuffer.Buffer[_ReservationStation.RS[curALU.RSindex].RoBIndex].ready = true;
+      _ReorderBuffer.nxtBuffer[_ReservationStation.RS[curALU.RSindex].RoBIndex].val = curALU.result;
+      _ReorderBuffer.nxtBuffer[_ReservationStation.RS[curALU.RSindex].RoBIndex].ready = true;
       curALU.busy = 0; curALU.done = 0;
     }
   }
@@ -151,7 +166,8 @@ void RISCV_Simulator::FetchFromRS() {
 //Actually this function fetches data from ALU directly
 
 void RISCV_Simulator::UpdateLSB() {
-  for (int i = 0; i < LoadStoreBuffer::LSBSize; i++) {
+  for (int i = _LoadStoreBuffer.LSB.FirstIndex(); i <= _LoadStoreBuffer.LSB.LastIndex(); i++) {
+    //Not changed to iterator right now, future work
     if (_ReorderBuffer.Buffer[_LoadStoreBuffer.LSB[i].q1].ready) {
       _LoadStoreBuffer.LSB[i].q1 = -1;
       _LoadStoreBuffer.LSB[i].v1 = _ReorderBuffer.Buffer[_LoadStoreBuffer.LSB[i].q1].val;
@@ -166,15 +182,26 @@ void RISCV_Simulator::UpdateLSB() {
 void RISCV_Simulator::FetchFromLSB() {
   auto curLS = _LoadStoreBuffer.LSB.front();
   if (_LoadStoreBuffer.done) {
-    _ReorderBuffer.Buffer[curLS.RoBIndex].val = curLS.result;
-    _ReorderBuffer.Buffer[curLS.RoBIndex].ready = true;
+    _ReorderBuffer.nxtBuffer[curLS.RoBIndex].val = curLS.result;
+    _ReorderBuffer.nxtBuffer[curLS.RoBIndex].ready = true;
+    _LoadStoreBuffer.busy = 0;
+    _LoadStoreBuffer.done = 0;
   }
 }
 
 void RISCV_Simulator::Issue() {
   if (dependency != -1) return;//Blocked by JALR
+  printf("PC: %x\n", _InstructionUnit.PC);
   Line newLine = _LoadStoreBuffer._Memory.ReadMemory(_InstructionUnit.PC, Instruction::LW);
+  printf("Line:%x\n", newLine);
   InstructionInfo instruction = ParseInstruction(newLine);
+  std::cerr << "Instruction:" << static_cast<int>(instruction.InstructionType) << std::endl;
+  std::cerr << "Immediate:" << instruction.Immediate << std::endl;
+  std::cerr << "Register ra: " << _RegisterFile.ReadRegister(1) << std::endl;
+  //std::cerr << "SR1: " << instruction.SR1 << std::endl;
+  //std::cerr << "SR2: " << instruction.SR2 << std::endl;
+  std::cerr << "DR: " << instruction.DR << std::endl;
+  sleep(1);
   switch (instruction.InstructionType) {
     case Instruction::END: {
       ReorderBufferInfo newInfo;
@@ -216,9 +243,11 @@ void RISCV_Simulator::Issue() {
       newInfo.instruction = instruction.InstructionType;
       newInfo.address = instruction.DR;
       newInfo.val = _InstructionUnit.PC + 4;
+      printf("val:%x\n", newInfo.val);
+      printf("PC:%x\n", _InstructionUnit.PC);
+      //Writing PC+4 into DR
       newInfo.ready = 1;
       if (!AppendReorderBuffer(newInfo)) return;
-      //Writing PC+4 into DR
       _InstructionUnit.PC = instruction.Immediate + _InstructionUnit.PC;
       break;
     }
@@ -232,13 +261,15 @@ void RISCV_Simulator::Issue() {
       newInfo.ready = 0;
       if (!AppendReorderBuffer(newInfo)) return;
       //Writing PC+4 into DR
-      if (_RegisterFile.ReadDependency(instruction.DR) == -1) {
-        _InstructionUnit.PC = _InstructionUnit.PC + instruction.Immediate;
+      std::cerr << "JALR SR1:" << instruction.SR1 << std::endl;
+      if (_RegisterFile.ReadDependency(instruction.SR1) == -1) {
+        _InstructionUnit.PC = _RegisterFile.ReadRegister(instruction.SR1) + instruction.Immediate;
       }//If there exists no dependency at the current moment, then it can be carried out right now
       else {
         immediate = instruction.Immediate;
-        dependency = _RegisterFile.ReadDependency(instruction.DR);
+        dependency = _RegisterFile.ReadDependency(instruction.SR1);
       }
+      sleep(5);
       break;
     }//JALR need a special dependency record for its usage of register
     //If there is a JALR, then the issue process should be stopped for we could never know where PC should go
@@ -257,7 +288,7 @@ void RISCV_Simulator::Issue() {
       newInfo.val = 0;
       if (!AppendReorderBuffer(newInfo)) return;
       ReservationStationEle newEle;
-      newEle.RoBIndex = _ReorderBuffer.Buffer.LastIndex();
+      newEle.RoBIndex = _ReorderBuffer.nxtBuffer.LastIndex();
       newEle.busy = 1; newEle.done = 0;
       newEle.instruction = instruction.InstructionType;
       newEle.q1 = _RegisterFile.ReadDependency(instruction.SR1);
@@ -291,7 +322,7 @@ void RISCV_Simulator::Issue() {
       newInfo.address = instruction.DR;
       if (!AppendReorderBuffer(newInfo)) return;
       LoadStoreBufferEle newEle;
-      newEle.RoBIndex = _ReorderBuffer.Buffer.LastIndex();
+      newEle.RoBIndex = _ReorderBuffer.nxtBuffer.LastIndex();
       newEle.done = 0;
       newEle.offset = instruction.Immediate;
       newEle.instruction = instruction.InstructionType;
@@ -318,7 +349,7 @@ void RISCV_Simulator::Issue() {
       newInfo.address = instruction.Immediate;//Problems here!
       if (!AppendReorderBuffer(newInfo)) return;
       LoadStoreBufferEle newEle;
-      newEle.RoBIndex = _ReorderBuffer.Buffer.LastIndex();
+      newEle.RoBIndex = _ReorderBuffer.nxtBuffer.LastIndex();
       newEle.done = 0;
       newEle.offset = instruction.Immediate;
       newEle.instruction = instruction.InstructionType;
@@ -332,6 +363,7 @@ void RISCV_Simulator::Issue() {
         newEle.q2 = -1;
         newEle.v2 = _ReorderBuffer.Buffer[newEle.q2].val;
       }
+      std::cerr << "Q1:" << newEle.q1 << " Q2:" << newEle.q2 << std::endl;
       if (!_LoadStoreBuffer.AppendBuffer(newEle)) {
         _ReorderBuffer.nxtBuffer.popback();
         return;
@@ -354,8 +386,8 @@ void RISCV_Simulator::Issue() {
       newInfo.address = instruction.DR;
       if (!AppendReorderBuffer(newInfo)) return;
       ReservationStationEle newEle;
-      newEle.RoBIndex = _ReorderBuffer.Buffer.LastIndex();
-      newEle.busy = 0; newEle.done = 0;
+      newEle.RoBIndex = _ReorderBuffer.nxtBuffer.LastIndex();
+      newEle.busy = 1; newEle.done = 0;
       newEle.instruction = instruction.InstructionType;
       newEle.q1 = _RegisterFile.ReadDependency(instruction.SR1);
       if (_ReorderBuffer.Buffer[newEle.q1].ready) {
@@ -388,8 +420,8 @@ void RISCV_Simulator::Issue() {
       newInfo.address = instruction.DR;
       if (!AppendReorderBuffer(newInfo)) return;
       ReservationStationEle newEle;
-      newEle.RoBIndex = _ReorderBuffer.Buffer.LastIndex();
-      newEle.busy = 0; newEle.done = 0;
+      newEle.RoBIndex = _ReorderBuffer.nxtBuffer.LastIndex();
+      newEle.busy = 1; newEle.done = 0;
       newEle.instruction = instruction.InstructionType;
       newEle.q1 = _RegisterFile.ReadDependency(instruction.SR1);
       if (_ReorderBuffer.Buffer[newEle.q1].ready) {

@@ -9,7 +9,7 @@ class Register {
   friend class RegisterFile;
 private:
   Line data = 0;
-  int dependency = 0;
+  int dependency = -1;
 public:
   Register() = default;
   Register(const Register& other) = default;

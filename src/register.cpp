@@ -1,7 +1,7 @@
 #include "Register.h"
 
 void Register::ResetDependency() {
-  dependency = 0;
+  dependency = -1;
 }
 
 int Register::Dependency() const {

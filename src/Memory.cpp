@@ -3,23 +3,23 @@
 Line Memory::ReadMemory(Line MemoryIndex, Instruction instruction) {
   switch (instruction) {
     case Instruction::LB: {
-      return static_cast<SignedByte>(RAM[MemoryIndex]);
+      return *(reinterpret_cast<SignedByte*>(RAM + MemoryIndex));
       break;
     }
     case Instruction::LH: {
-      return static_cast<SignedHalfLine>(RAM[MemoryIndex]);
+      return *(reinterpret_cast<SignedHalfLine*>(RAM + MemoryIndex));
       break;
     }
     case Instruction::LW: {
-      return RAM[MemoryIndex];
+      return *(reinterpret_cast<Line*>(RAM + MemoryIndex));
       break;
     }
     case Instruction::LBU: {
-      return static_cast<Byte>(RAM[MemoryIndex]);
+      return *(reinterpret_cast<Byte*>(RAM + MemoryIndex));
       break;
     }
     case Instruction::LHU: {
-      return static_cast<HalfLine>(RAM[MemoryIndex]);
+      return *(reinterpret_cast<HalfLine*>(RAM + MemoryIndex));
       break;
     }
     default:

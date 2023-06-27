@@ -61,7 +61,7 @@ public:
     return _queue[index];
   }
   size_t FirstIndex() {
-    return head;
+    return sub(head);
   }
   size_t LastIndex() {
     return tail;

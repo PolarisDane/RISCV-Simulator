@@ -58,7 +58,7 @@ public:
 class InstructionUnit {
   friend class RISCV_Simulator;
 private:
-  Line PC;
+  Line PC = 0;
 public:
   InstructionUnit() = default;
   InstructionUnit(const InstructionUnit& other) = default;

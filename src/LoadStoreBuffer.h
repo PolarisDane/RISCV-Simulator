@@ -12,7 +12,7 @@ class LoadStoreBufferEle {
 public:
   bool done = 0;
   Line result;
-  size_t q1, q2;
+  int q1, q2;
   Line v1, v2;
   Line offset;
   size_t RoBIndex;

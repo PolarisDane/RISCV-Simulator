@@ -14,6 +14,7 @@ Line ParseAUIPCImmediate(Line instruction) {
 
 Line ParseJALImmediate(Line instruction) {
   Line immediate = 0;
+  std::cerr << "JAL immediate" << std::endl;
   immediate |= instruction & (0xFF000);//19:12
   immediate |= (instruction >> 9) & (0x800);//11
   immediate |= (instruction >> 20) & (0x7FE);
@@ -27,15 +28,15 @@ Line ParseJALRImmediate(Line instruction) {
 }
 
 Line ParseSR1(Line instruction) {
-  return instruction & (0xF8000);
+  return (instruction >> 15) & (0x1F);
 }
 
 Line ParseSR2(Line instruction) {
-  return instruction & (0x1F00000);
+  return (instruction >> 20) & (0x1F);
 }
 
 Line ParseDR(Line instruction) {
-  return instruction & (0xF80);
+  return (instruction >> 7) & (0x1F);
 }
 
 Instruction ParseBranchInstruction(Line instruction) {
@@ -217,6 +218,7 @@ InstructionInfo ParseInstruction(Line instruction) {
     case 0b1100111: {
       newInfo.InstructionType = Instruction::JALR;
       newInfo.Immediate = ParseJALRImmediate(instruction);
+      newInfo.SR1 = ParseSR1(instruction);
       newInfo.DR = ParseDR(instruction);
       break;
     }
@@ -239,6 +241,7 @@ InstructionInfo ParseInstruction(Line instruction) {
       newInfo.InstructionType = ParseStoreInstruction(instruction);
       newInfo.Immediate = ParseStoreImmediate(instruction);
       newInfo.SR1 = ParseSR1(instruction);
+      newInfo.SR2 = ParseSR2(instruction);
       newInfo.DR = ParseDR(instruction);
       break;
     }

@@ -5,6 +5,15 @@ void ReservationStation::Clear() {
     RS[i].busy = RS[i].done = 0;
 }
 
+void ReservationStation::Flush() {
+  for (int i = 0; i < ALUSize; i++) {
+    _add[i].Flush();
+    _logic[i].Flush();
+    _shift[i].Flush();
+    _set[i].Flush();
+  }
+}
+
 void ReservationStation::Work() {
   for (int i = 0; i < RSSize; i++) {
     if (RS[i].q1 == -1 && RS[i].q2 == -1 && RS[i].busy && !RS[i].done) {

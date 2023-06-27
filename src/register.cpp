@@ -27,7 +27,7 @@ Line RegisterFile::ReadRegister(Line RegisterIndex) {
 
 void RegisterFile::ResetRegister() {
   for (int i = 0; i < RegisterFileSize; i++)
-    curRegister[i].ResetDependency();
+    nxtRegister[i].ResetDependency();
 }
 
 int RegisterFile::ReadDependency(Line RegisterIndex) {
@@ -35,6 +35,7 @@ int RegisterFile::ReadDependency(Line RegisterIndex) {
 }
 
 void RegisterFile::SetDependency(Line RegisterIndex, int _dependency) {
+  if (!RegisterIndex) return;//x0 has no dependency
   nxtRegister[RegisterIndex].dependency = _dependency;
 }
 

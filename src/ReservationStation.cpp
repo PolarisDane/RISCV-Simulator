@@ -16,14 +16,22 @@ void ReservationStation::Flush() {
 
 void ReservationStation::Work() {
   for (int i = 0; i < RSSize; i++) {
+    if (RS[i].busy) {
+      std::cout << "RS" << i << std::endl;
+      std::cout << "RS RoBIndex: " << RS[i].RoBIndex << std::endl;
+      std::cout << "Q1" << RS[i].q1 << std::endl;
+      std::cout << "Q2" << RS[i].q2 << std::endl;
+      std::cout << "busy" << RS[i].busy << std::endl;
+      std::cout << "done" << RS[i].done << std::endl;
+    }
     if (RS[i].q1 == -1 && RS[i].q2 == -1 && RS[i].busy && !RS[i].done) {
       switch (RS[i].instruction) {
         case Instruction::ADD:
         case Instruction::SUB:
         case Instruction::ADDI: {
-          for (int i = 0; i < ALUSize; i++) {
-            if (!_add[i].busy) {
-              _add[i].work(RS[i].v1, RS[i].v2, i, RS[i].instruction);
+          for (int j = 0; j < ALUSize; j++) {
+            if (!_add[j].busy) {
+              _add[j].work(RS[i].v1, RS[i].v2, i, RS[i].instruction);
               RS[i].done = 1;
               return;
             }
@@ -37,9 +45,9 @@ void ReservationStation::Work() {
         case Instruction::ORI:
         case Instruction::XOR:
         case Instruction::XORI: {
-          for (int i = 0; i < ALUSize; i++) {
-            if (!_logic[i].busy) {
-              _logic[i].work(RS[i].v1, RS[i].v2, i, RS[i].instruction);
+          for (int j = 0; j < ALUSize; j++) {
+            if (!_logic[j].busy) {
+              _logic[j].work(RS[i].v1, RS[i].v2, i, RS[i].instruction);
               RS[i].done = 1;
               return;
             }
@@ -50,10 +58,16 @@ void ReservationStation::Work() {
         case Instruction::SLTI:
         case Instruction::SLTIU:
         case Instruction::SLT:
-        case Instruction::SLTU: {
-          for (int i = 0; i < ALUSize; i++) {
-            if (!_set[i].busy) {
-              _set[i].work(RS[i].v1, RS[i].v2, i, RS[i].instruction);
+        case Instruction::SLTU:
+        case Instruction::BEQ:
+        case Instruction::BGE:
+        case Instruction::BGEU:
+        case Instruction::BLT:
+        case Instruction::BLTU:
+        case Instruction::BNE: {
+          for (int j = 0; j < ALUSize; j++) {
+            if (!_set[j].busy) {
+              _set[j].work(RS[i].v1, RS[i].v2, i, RS[i].instruction);
               RS[i].done = 1;
               return;
             }
@@ -67,9 +81,9 @@ void ReservationStation::Work() {
         case Instruction::SLL:
         case Instruction::SRL:
         case Instruction::SRA: {
-          for (int i = 0; i < ALUSize; i++) {
-            if (!_shift[i].busy) {
-              _shift[i].work(RS[i].v1, RS[i].v2, i, RS[i].instruction);
+          for (int j = 0; j < ALUSize; j++) {
+            if (!_shift[j].busy) {
+              _shift[j].work(RS[i].v1, RS[i].v2, i, RS[i].instruction);
               RS[i].done = 1;
               return;
             }

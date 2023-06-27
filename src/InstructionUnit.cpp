@@ -14,7 +14,7 @@ Line ParseAUIPCImmediate(Line instruction) {
 
 Line ParseJALImmediate(Line instruction) {
   Line immediate = 0;
-  std::cerr << "JAL immediate" << std::endl;
+  std::cout << "JAL immediate" << std::endl;
   immediate |= instruction & (0xFF000);//19:12
   immediate |= (instruction >> 9) & (0x800);//11
   immediate |= (instruction >> 20) & (0x7FE);
@@ -242,7 +242,6 @@ InstructionInfo ParseInstruction(Line instruction) {
       newInfo.Immediate = ParseStoreImmediate(instruction);
       newInfo.SR1 = ParseSR1(instruction);
       newInfo.SR2 = ParseSR2(instruction);
-      newInfo.DR = ParseDR(instruction);
       break;
     }
     case 0b0010011: {

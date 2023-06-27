@@ -18,6 +18,7 @@ void LoadStoreBuffer::Work() {
   if (busy || LSB.empty()) return;
   auto& curLS = LSB.front();
   if (curLS.q1 == -1 && curLS.q2 == -1) {
+    std::cout << "LSB RoBIndex:" << curLS.RoBIndex << std::endl;
     busy = 1; count = 3;
     switch (curLS.instruction) {
       case Instruction::LB:
@@ -33,6 +34,8 @@ void LoadStoreBuffer::Work() {
       case Instruction::SB:
       case Instruction::SH:
       case Instruction::SW: {
+        std::cout << "store" << std::endl;
+        curLS.result = curLS.v1 + curLS.offset;
         //curLS[i] .result = _Memory.WriteMemory(curLS[i].v1 + curLS[i].offset, curLS[i].v2, instruction);
         //Do nothing perhaps?
         break;

@@ -30,15 +30,15 @@ Line Memory::ReadMemory(Line MemoryIndex, Instruction instruction) {
 void Memory::WriteMemory(Line MemoryIndex, Line val, Instruction instruction) {
   switch (instruction) {
     case Instruction::SB: {
-      RAM[MemoryIndex] = static_cast<Byte>(val);
+      RAM[MemoryIndex] = val;
       break;
     }
     case Instruction::SH: {
-      RAM[MemoryIndex] = static_cast<HalfLine>(val);
+      *(reinterpret_cast<HalfLine*>(RAM + MemoryIndex)) = val;
       break;
     }
     case Instruction::SW: {
-      RAM[MemoryIndex] = val;
+      *(reinterpret_cast<Line*>(RAM + MemoryIndex)) = val;
       break;
     }
   }

@@ -31,7 +31,7 @@ public:
     return (cur + 1) % _size;
   }
   size_t pre(size_t cur) {
-    return (cur - 1 + _size) % _size;
+    return (cur + _size - 1) % _size;
   }
   bool full() {
     return sub(tail) == head;

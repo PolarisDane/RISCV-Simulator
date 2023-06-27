@@ -22,10 +22,11 @@ private:
   LoadStoreBuffer _LoadStoreBuffer;
   InstructionUnit _InstructionUnit;
   BranchPredictor _BranchPredictor;
-  Line PC;
   size_t _clock = 0;
+  //Line RoBIndex;
   int dependency = -1;
   Line immediate;
+  //Used for JALR only
 public:
   RISCV_Simulator() = default;
   RISCV_Simulator(const RISCV_Simulator& other) = default;

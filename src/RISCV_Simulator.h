@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <unistd.h>
+#include <algorithm>
 #include "ReorderBuffer.h"
 #include "ReservationStation.h"
 #include "Register.h"

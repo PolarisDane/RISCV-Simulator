@@ -3,15 +3,30 @@
 
 void RISCV_Simulator::Run() {
   _LoadStoreBuffer._Memory.InitMemory();
+  int a[5] = { 0,1,2,3,4 };
+  srand(time(NULL) * 20040301);
+  std::random_shuffle(a, a + 4);
+  //for (int i = 0; i <= 4; i++) std::cerr << a[i] << " ";
+  //std::cerr << std::endl;
   while (true) {
     //std::cout << "clock: " << _clock << std::endl;
-    Fetch();
-    Update();
-    Issue();
-    Work();
-    _clock++;
-    Commit();
+    std::random_shuffle(a, a + 4);
+    for (int i = 0; i <= 4; i++) {
+      if (a[i] == 0) Fetch();
+      if (a[i] == 1) Update();
+      if (a[i] == 2) Issue();
+      if (a[i] == 3) Work();
+      if (a[i] == 4) Commit();
+    }
     Flush();
+    _clock++;
+    //Fetch();
+    //Update();
+    //Issue();
+    //Work();
+    //_clock++;
+    //Commit();
+    //Flush();
     //if (_clock >= 55900) {
     //  std::cout << "LSB size: " << _LoadStoreBuffer.LSB.size() << std::endl;
     //  std::cout << "LSB RoB index: " << _LoadStoreBuffer.LSB.front().RoBIndex << std::endl;
@@ -116,8 +131,6 @@ void RISCV_Simulator::Commit() {
         if (RealBranch) _InstructionUnit.PC = _front.address;
         else _InstructionUnit.PC = _front.curPC + 4;
         //std::cout << "Branch Prediction failed" << std::endl;
-        //printf("If fail: %x\n", _front.curPC + 4);
-        //printf("If success: %x\n", _front.address);
         //printf("PC changed to %x\n", _InstructionUnit.PC);
         return;//ReorderBuffer already cleared
       }
@@ -182,10 +195,6 @@ void RISCV_Simulator::FetchFromRS() {
   for (int i = 0; i < ReservationStation::ALUSize; i++) {
     auto& curALU = _ReservationStation._add[i];
     if (curALU.done) {
-      //std::cout << "RoBIndex In ALU:" << _ReservationStation.RS[curALU.RSindex].RoBIndex << std::endl;
-      //printf("PC:%x\n", _ReorderBuffer.Buffer[_ReservationStation.RS[curALU.RSindex].RoBIndex].curPC);
-      //std::cout << "V1:" << _ReservationStation.RS[curALU.RSindex].v1 << " V2:" << _ReservationStation.RS[curALU.RSindex].v2 << std::endl;
-      //std::cout << "Result:" << curALU.result << std::endl;
       _ReservationStation.RS[curALU.RSindex].busy = 0;
       _ReservationStation.RS[curALU.RSindex].done = 1;
       _ReorderBuffer.nxtBuffer[_ReservationStation.RS[curALU.RSindex].RoBIndex].val = curALU.result;
@@ -261,12 +270,6 @@ void RISCV_Simulator::FetchFromLSB() {
       case Instruction::LW:
       case Instruction::LBU:
       case Instruction::LHU: {
-        //std::cout << "LOAD:" << std::endl;
-        //printf("PC:%x\n", _ReorderBuffer.Buffer[curLS.RoBIndex].curPC);
-        //std::cout << "RoBIndex:" << curLS.RoBIndex << std::endl;
-        //std::cout << "Result:" << curLS.result << std::endl;
-        //std::cout << "Address:" << _ReorderBuffer.Buffer[curLS.RoBIndex].address << std::endl;
-        //std::cout << "NxtAddress:" << _ReorderBuffer.nxtBuffer[curLS.RoBIndex].address << std::endl;
         _ReorderBuffer.nxtBuffer[curLS.RoBIndex].val = curLS.result;
         _ReorderBuffer.nxtBuffer[curLS.RoBIndex].ready = true;
         break;
@@ -276,7 +279,6 @@ void RISCV_Simulator::FetchFromLSB() {
       case Instruction::SW: {
         _ReorderBuffer.nxtBuffer[curLS.RoBIndex].address = curLS.result;
         _ReorderBuffer.nxtBuffer[curLS.RoBIndex].val = curLS.v2;
-        //std::cout << std::endl << "Store Address: " << curLS.result << std::endl;
         _ReorderBuffer.nxtBuffer[curLS.RoBIndex].ready = true;
         break;
       }//Store instruction's destination can only be calculated in LSB, not ready before
@@ -367,7 +369,6 @@ void RISCV_Simulator::Issue() {
       //Writing PC+4 into DR
       if (_RegisterFile.ReadDependency(instruction.SR1) == -1) {
         _InstructionUnit.PC = _RegisterFile.ReadRegister(instruction.SR1) + instruction.Immediate;
-        //printf("PC changed to: %x\n", _InstructionUnit.PC);
       }//If there exists no dependency at the current moment, then it can be carried out right now
       else {
         immediate = instruction.Immediate;

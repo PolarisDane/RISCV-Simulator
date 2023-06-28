@@ -10,7 +10,6 @@
 
 class LoadStoreBufferEle {
 public:
-  bool done = 0;
   Line result;
   int q1, q2;
   Line v1, v2;

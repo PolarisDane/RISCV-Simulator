@@ -22,6 +22,7 @@ public:
   Line curPC;//Where this instruction is at, used for possible BR reflow
   Line val;
   Line address;//Register/Memory address
+  bool prediction = false;
 };
 
 class ReorderBuffer {
@@ -33,12 +34,6 @@ public:
   ReorderBuffer() = default;
   ReorderBuffer(const ReorderBuffer& other) = default;
   ~ReorderBuffer() = default;
-  ReorderBufferInfo& operator [](size_t index) {
-    return nxtBuffer[index];
-  }//Left value is from the new buffer
-  const ReorderBufferInfo& operator [](size_t index)const {
-    return Buffer[index];
-  }//Right value is from the old buffer
   void FlushBuffer();
   void ClearBuffer();
 };

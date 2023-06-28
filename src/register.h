@@ -35,6 +35,7 @@ public:
   int ReadDependency(Line RegisterIndex);
   void SetDependency(Line RegisterIndex, int _dependency);
   void WriteRegister(Line RegisterIndex, Line _data);
+  void RestoreRegister(Line RegisterIndex, int _dependency);
 };
 
 #endif

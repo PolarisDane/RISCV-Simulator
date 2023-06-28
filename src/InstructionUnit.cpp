@@ -14,7 +14,6 @@ Line ParseAUIPCImmediate(Line instruction) {
 
 Line ParseJALImmediate(Line instruction) {
   Line immediate = 0;
-  std::cout << "JAL immediate" << std::endl;
   immediate |= instruction & (0xFF000);//19:12
   immediate |= (instruction >> 9) & (0x800);//11
   immediate |= (instruction >> 20) & (0x7FE);
@@ -178,11 +177,11 @@ Line ParseLoadImmediate(Line instruction) {
 
 Line ParseBranchImmediate(Line instruction) {
   Line immediate = 0;
-  immediate |= (immediate << 4) & (0x800);
-  immediate |= (immediate >> 7) & (0x1E);
-  immediate |= (immediate >> 20) & (0x7E0);
-  immediate |= (immediate >> 19) & (0x800);
-  return immediate & (0x800) ? immediate & (0xFFFFF000) : immediate;
+  immediate |= (instruction << 4) & (0x800);
+  immediate |= (instruction >> 7) & (0x1E);
+  immediate |= (instruction >> 20) & (0x7E0);
+  immediate |= (instruction >> 19) & (0x1000);
+  return immediate & (0x1000) ? immediate | (0xFFFFF000) : immediate;
 }
 
 Line ParseShamt(Line instruction) {

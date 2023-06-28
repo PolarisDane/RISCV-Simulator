@@ -32,17 +32,17 @@ void ShiftALU::work(Line in1, Line in2, int pos, Instruction instruction) {
   switch (instruction) {
     case Instruction::SLL:
     case Instruction::SLLI:{
-      this->result = in1 << in2;
+      this->result = in1 << (in2 & 0b11111);
       break;
     }
     case Instruction::SRL:
     case Instruction::SRLI: {
-      this->result = in1 >> in2;
+      this->result = in1 >> (in2 & 0b11111);
       break;
     }
     case Instruction::SRA:
     case Instruction::SRAI: {
-      this->result = (static_cast<SignedLine>(in1)) >> in2;
+      this->result = (static_cast<SignedLine>(in1)) >> (in2 & 0b11111);
       //Right shift by arithmetic, need to be done in signed form
       break;
     }

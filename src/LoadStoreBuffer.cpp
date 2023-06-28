@@ -18,7 +18,7 @@ void LoadStoreBuffer::Flush() {
 void LoadStoreBuffer::Work() {
   if (busy || LSB.empty()) return;
   auto& curLS = LSB.front();
-  std::cout << "q1: " << curLS.q1 << " q2: " << curLS.q2 << std::endl;
+  //std::cout << "q1: " << curLS.q1 << " q2: " << curLS.q2 << std::endl;
   if (curLS.q1 == -1 && curLS.q2 == -1) {
 #ifdef DEBUG
     std::cout << "LSB RoBIndex:" << curLS.RoBIndex << std::endl;

@@ -48,7 +48,6 @@ void Memory::ResetMemory() {
   memset(RAM, 0, sizeof(RAM));
 }
 
-
 void Memory::InitMemory() {
   std::string data;
   int address;

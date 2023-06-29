@@ -16,8 +16,8 @@ Line ParseJALImmediate(Line instruction) {
   Line immediate = 0;
   immediate |= instruction & (0xFF000);//19:12
   immediate |= (instruction >> 9) & (0x800);//11
-  immediate |= (instruction >> 20) & (0x7FE);
-  immediate |= (instruction >> 11) & (0x100000);
+  immediate |= (instruction >> 20) & (0x7FE);//10:1
+  immediate |= (instruction >> 11) & (0x100000);//20
   return immediate & (0x100000) ? immediate | (0xFFF00000) : immediate;//SEXT
 }
 

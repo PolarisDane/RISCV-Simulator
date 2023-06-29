@@ -27,6 +27,8 @@ private:
   //Line RoBIndex;
   int dependency = -1;
   Line immediate;
+  int BranchCount = 0;
+  int CorrectCount = 0;
   //Used for JALR only
 public:
   RISCV_Simulator() = default;

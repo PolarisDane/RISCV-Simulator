@@ -2,7 +2,7 @@
 #include "RISCV_Simulator.h"
 
 signed main() {
-  //freopen("bulgarian.data", "r", stdin);
+  //freopen("multiarray.data", "r", stdin);
   //freopen("ans.out", "w", stdout);
   RISCV_Simulator RISCV;
   RISCV.Run();

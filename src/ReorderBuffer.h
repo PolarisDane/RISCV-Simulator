@@ -22,7 +22,7 @@ public:
   Line curPC;//Where this instruction is at, used for possible BR reflow
   Line val;
   Line address;//Register/Memory address
-  bool prediction = false;
+  std::pair<bool, bool> prediction = std::make_pair(false, false);
 };
 
 class ReorderBuffer {

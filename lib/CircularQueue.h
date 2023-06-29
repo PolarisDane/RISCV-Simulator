@@ -66,6 +66,9 @@ public:
   size_t LastIndex() {
     return tail;
   }
+  size_t EndIndex() {
+    return sub(tail);
+  }
 };
 
 #endif

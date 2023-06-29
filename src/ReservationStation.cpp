@@ -22,14 +22,16 @@ void ReservationStation::Flush() {
 
 void ReservationStation::Work() {
   for (int i = 0; i < RSSize; i++) {
-    //if (RS[i].busy) {
-    //  std::cout << "RS" << i << std::endl;
-    //  std::cout << "RS RoBIndex: " << RS[i].RoBIndex << std::endl;
-    //  std::cout << "Q1: " << RS[i].q1 << std::endl;
-    //  std::cout << "Q2: " << RS[i].q2 << std::endl;
-    //  std::cout << "busy: " << RS[i].busy << std::endl;
-    //  std::cout << "done: " << RS[i].done << std::endl;
-    //}
+#ifdef DEBUG
+    if (RS[i].busy) {
+      std::cout << "RS" << i << std::endl;
+      std::cout << "RS RoBIndex: " << RS[i].RoBIndex << std::endl;
+      std::cout << "Q1: " << RS[i].q1 << std::endl;
+      std::cout << "Q2: " << RS[i].q2 << std::endl;
+      std::cout << "busy: " << RS[i].busy << std::endl;
+      std::cout << "done: " << RS[i].done << std::endl;
+    }
+#endif
     if (RS[i].q1 == -1 && RS[i].q2 == -1 && RS[i].busy && !RS[i].done) {
       switch (RS[i].instruction) {
         case Instruction::ADD:

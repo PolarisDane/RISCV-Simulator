@@ -18,7 +18,9 @@ void LoadStoreBuffer::Flush() {
 void LoadStoreBuffer::Work() {
   if (busy || LSB.empty()) return;
   auto& curLS = LSB.front();
+#ifdef DEBUG
   //std::cout << "q1: " << curLS.q1 << " q2: " << curLS.q2 << std::endl;
+#endif
   if (curLS.q1 == -1 && curLS.q2 == -1) {
 #ifdef DEBUG
     std::cout << "LSB RoBIndex:" << curLS.RoBIndex << std::endl;
@@ -31,9 +33,6 @@ void LoadStoreBuffer::Work() {
       case Instruction::LBU:
       case Instruction::LHU: {
         curLS.result = _Memory.ReadMemory(curLS.v1 + curLS.offset, curLS.instruction);
-#ifdef DEBUG
-        printf("Read Memory: %d from %d\n", curLS.result, curLS.v1 + curLS.offset);
-#endif
         //Wait for 3 cycles for the result to return
         break;
       }
@@ -42,10 +41,7 @@ void LoadStoreBuffer::Work() {
       case Instruction::SH:
       case Instruction::SW: {
         curLS.result = curLS.v1 + curLS.offset;
-#ifdef DEBUG
-        printf("Write Memory: %d to %d\n", curLS.v2, curLS.v1 + curLS.offset);
-#endif
-        //curLS[i] .result = _Memory.WriteMemory(curLS[i].v1 + curLS[i].offset, curLS[i].v2, instruction);
+        //curLS.result = _Memory.WriteMemory(curLS.v1 + curLS.offset, curLS.v2, instruction);
         //Do nothing perhaps?
         break;
       }
